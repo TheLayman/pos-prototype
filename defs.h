@@ -8,6 +8,7 @@
 #include<stdlib.h>
 #include<unistd.h>
 #include<ctype.h>
+#include <math.h>
 #define MAXLINE 100
 
 void signalHandler(int sig); //programmer-defined signal handler for Ctrl+C command
@@ -19,7 +20,7 @@ void inputFormat(void);
 
 typedef struct _data
 {
-	int item_code;
+	int itemUPC;
 	char item_name[MAXLINE];
 	double price;
 }database;

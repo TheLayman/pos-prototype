@@ -4,58 +4,34 @@ int sockfd; //client socket descriptor
 
 void signalHandler(int sig)
 {
-	char com_buff[MAXLINE];
-	printf("\nCtrl+C - Terminating Gracefully!! Don't force me :p..");
-	sprintf(com_buff,"-256");
-	send(sockfd,com_buff,MAXLINE,0);
+	char sendBuffer[MAXLINE];
+	// printf("\nCtrl+C - Terminating Gracefully!! Don't force me :p..");
+	sprintf(sendBuffer,"----||||----");
+	send(sockfd,sendBuffer,MAXLINE,0);
 	close(sockfd);
 	exit(0);
 }
 
 void inputFormat(void)
 {
-	printf("\nEnter command in the following format:\n<request type> <item code> <quantity>\n");
+	printf("\nInput format:<request type><item code><quantity>\n\nExample:\n\n010223 (for 23 units of item 102)\n\tor\n11111 (for close)\n============================================================\n");
 }
 
 int commandHandler(int sockfd)
 {
-	char com_buff[MAXLINE],recv_buff[MAXLINE];
+	char sendBuffer[MAXLINE],recvBuffer[MAXLINE];
 	inputFormat();
 
 	while(1)
 	{
-		memset(com_buff,0,MAXLINE);
-		memset(recv_buff,0,MAXLINE);
-		gets(com_buff);
-		send(sockfd,com_buff,MAXLINE,0);
-		recv(sockfd,recv_buff,MAXLINE,0);
-		if(recv_buff[2]=='i')
-			printf("\n%s\n",recv_buff);
+		memset(sendBuffer,0,MAXLINE);
+		memset(recvBuffer,0,MAXLINE);
+		gets(sendBuffer);
+		send(sockfd,sendBuffer,MAXLINE,0);
+		recv(sockfd,recvBuffer,MAXLINE,0);
+		puts(recvBuffer);
 
-		if(recv_buff[0]=='T' || recv_buff[0]=='S')
-		{
-			printf("\n");
-			fputs(recv_buff,stdout);
-			close(sockfd);
-			return 1;
-		}
-
-		if(recv_buff[2]=='o')
-		{
-			printf("\n");
-			fputs(recv_buff,stdout);
-			inputFormat();
-			continue;
-		}
-
-		if(recv_buff[0]=='U')
-		{
-			printf("\n");
-			fputs(recv_buff,stdout);
-			continue;
-		}
 	}
-signalHandler(1);
 }
 
 int main(int argc, char *argv[])
