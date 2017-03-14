@@ -1,23 +1,62 @@
-//cash register client
-#include<sys/socket.h>
-#include<netinet/in.h>
-#include<arpa/inet.h>
-#include<netdb.h>
-#include<signal.h>
-#include<string.h>
-#include<stdlib.h>
-#include<stdio.h>
-#include<unistd.h>
-#include<ctype.h>
-
-
-#define MAXLINE 100
-
-int command_process(int); //client places request with this command
-void command_format(void);
-void signal_handler(int sig); //programmer-defined signal handler for ctrl+C
+#include "defs.h"
 
 int sockfd; //client socket descriptor
+
+void signalHandler(int sig)
+{
+	char com_buff[MAXLINE];
+	printf("\nCtrl+C - Terminating Gracefully!! Don't force me :p..");
+	sprintf(com_buff,"-256");
+	send(sockfd,com_buff,MAXLINE,0);
+	close(sockfd);
+	exit(0);
+}
+
+void inputFormat(void)
+{
+	printf("\nEnter command in the following format:\n<request type> <item code> <quantity>\n");
+}
+
+int commandHandler(int sockfd)
+{
+	char com_buff[MAXLINE],recv_buff[MAXLINE];
+	inputFormat();
+
+	while(1)
+	{
+		memset(com_buff,0,MAXLINE);
+		memset(recv_buff,0,MAXLINE);
+		gets(com_buff);
+		send(sockfd,com_buff,MAXLINE,0);
+		recv(sockfd,recv_buff,MAXLINE,0);
+		if(recv_buff[2]=='i')
+			printf("\n%s\n",recv_buff);
+
+		if(recv_buff[0]=='T' || recv_buff[0]=='S')
+		{
+			printf("\n");
+			fputs(recv_buff,stdout);
+			close(sockfd);
+			return 1;
+		}
+
+		if(recv_buff[2]=='o')
+		{
+			printf("\n");
+			fputs(recv_buff,stdout);
+			inputFormat();
+			continue;
+		}
+
+		if(recv_buff[0]=='U')
+		{
+			printf("\n");
+			fputs(recv_buff,stdout);
+			continue;
+		}
+	}
+signalHandler(1);
+}
 
 int main(int argc, char *argv[])
 {
@@ -45,14 +84,14 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	signal(SIGINT,signal_handler);
+	signal(SIGINT,signalHandler);
 
 	printf("\n Connection established :\n ");
 
 	while(1)
 	{
 
-		check=command_process(sockfd);
+		check=commandHandler(sockfd);
 		if(check<0)
 		{
 			printf("Client closing socket!..exiting!\n");
@@ -67,61 +106,4 @@ int main(int argc, char *argv[])
 	}
 
 	return 0;
-}
-
-void command_format(void)
-{
-	printf("\nEnter command in the following format:\n<request type> <item code> <quantity>\n");
-}
-
-
-int command_process(int sockfd)
-{
-	char com_buff[MAXLINE],recv_buff[MAXLINE];
-	command_format();
-
-	while(1)
-	{
-		memset(com_buff,0,MAXLINE);
-		memset(recv_buff,0,MAXLINE);
-		gets(com_buff);
-		send(sockfd,com_buff,MAXLINE,0);
-		recv(sockfd,recv_buff,MAXLINE,0);
-		if(recv_buff[2]=='i')
-			printf("\n%s\n",recv_buff);
-
-		if(recv_buff[0]=='T' || recv_buff[0]=='S')
-		{
-			printf("\n");
-			fputs(recv_buff,stdout);
-			close(sockfd);
-			return 1;
-		}
-
-		if(recv_buff[2]=='o')
-		{
-			printf("\n");
-			fputs(recv_buff,stdout);
-			command_format();
-			continue;
-		}
-
-		if(recv_buff[0]=='U')
-		{
-			printf("\n");
-			fputs(recv_buff,stdout);
-			continue;
-		}
-	}
-signal_handler(1);
-}
-
-void signal_handler(int sig)
-{
-	char com_buff[MAXLINE];
-	printf("\nCtrl+C - Terminating Gracefully!! Don't force me :p..");
-	sprintf(com_buff,"-256");
-	send(sockfd,com_buff,MAXLINE,0);
-	close(sockfd);
-	exit(0);
 }

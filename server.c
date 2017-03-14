@@ -1,93 +1,59 @@
-#include<sys/socket.h>
-#include<netinet/in.h>
-#include<arpa/inet.h>
-#include<netdb.h>
-#include<string.h>
-#include<stdio.h>
-#include<signal.h>
-#include<stdlib.h>
-#include<unistd.h>
-#include<ctype.h>
+#include"defs.h"
 
+database *data; //Item-Name-Price list.
+int records; //No. of Items in the database.
+int listensd,consd; //Socket descriptors.
 
-#define MAXLINE 100
-
-void signal_handler(int sig); //programmer-defined signal handler for Ctrl+C command
-
-typedef struct _data
+void databaseInit(char *file_name)
 {
-	int item_code;
-	char item_name[MAXLINE];
-	double price;
-}database;
-
-database *datap;
-int records; //keeps track of number of records in the database
-
-void create_database(char *); //creates database
-int check_code(int); //searches and returns item_code supplied in the database and returns accordingly
-void childprocess(int,int);
-
-int listensd,consd; //sd newsd are socket descriptors
-
-int main(int argc, char *argv[])
-{
-	int clilen; //clilen is the length of the client socket, used as a value-result argument
-	pid_t childpid; //holds process id of child
-	struct sockaddr_in ServAddr, CliAddr; //sockaddr structure for sockets; one for server and the other for client
-
-	if(argc<2)
+	FILE *fp;
+	char line_buff[MAXLINE];
+	int ctr=0;
+	fp=fopen(file_name,"r");
+	if(fp==NULL)
 	{
-		printf("\nToo few arguments to server!..exiting");
+		printf("\nDatabase Configuration Error.. Terminating Server.%s",file_name);
+		signalHandler(0);
 		exit(0);
 	}
-	int SERVER_PORT = atoi(argv[1]);
-	//Creating the socket
-	listensd=socket(AF_INET,SOCK_STREAM,0); //socket(internet_family,socket_type,protocol_value) retruns socket descriptor
-	if(listensd<0)
+	fgets(line_buff,MAXLINE,fp); //reads the first line that has the number of entries in the text file
+	records=atoi(line_buff); //gets number of records
+	data=(database *)malloc(records*sizeof(database)); //allocates memory for database
+	for(ctr=0;ctr<records;ctr++)
 	{
-		perror("Cannot create socket!");
-		return 0;
+		fscanf(fp,"%d",&data[ctr].item_code);
+		fscanf(fp,"%s",data[ctr].item_name);
+		fscanf(fp,"%lf",&data[ctr].price);
 	}
+	printf("Database Configuration..... Complete\n" );
+	return ;
+}
 
-	//Setting up the Server socket
-	ServAddr.sin_family=AF_INET;
-	ServAddr.sin_addr.s_addr = INADDR_ANY; //using the input IP
-	ServAddr.sin_port = htons(SERVER_PORT); //self defined server port
-	//Binding socket
-	if(bind(listensd,(struct sockaddr *) &ServAddr, sizeof(ServAddr))<0)
-	{
-		perror("Cannot bind port!");
-		return 0;
-	}
+int findUPC(int item_code)
+{
+	int ctr;
 
-	if (listen(listensd,SOMAXCONN) <0 )
+	for(ctr=0;ctr<records;ctr++)
 	{
-		perror("Can't set the socket to listen");
-		return 0;
-	}
-	//Initializing Database
-	create_database("database.txt");
-	signal(SIGINT,signal_handler);
-	while(1!=0)
-	{
-		clilen=sizeof(CliAddr);
-		if((consd=accept(listensd,(struct sockaddr *)&CliAddr,&clilen))<0)
+		if(item_code==data[ctr].item_code)
 		{
-			perror("Cannot establish connection!");
-			return 0;
+			return(ctr);
 		}
-
-		if((childpid=fork())==0)
-		{
-			close(listensd); //Allowing only one socket to listen by closing child process' listensd.
-			printf("\nRequest from %s servcied with child process %d\n",inet_ntoa(CliAddr.sin_addr) ,getpid());
-			childprocess(consd,getpid()); //A Child Process for a connection.
-			close(consd); //Child closes its version of consd after transaction is completed.
-			exit(0); //Child terminates.
-		}
-		close(consd); //Parent looks for more connections by closing the consd.
 	}
+	return(-1);
+}
+
+void signalHandler(int sig)
+{
+	char msg[MAXLINE];
+
+	close(listensd);
+	fputs("\nServer terminating!..",stdout);
+
+	sprintf(msg,"Server terminated!\n");
+	send(consd,msg,MAXLINE,0);
+
+	exit(0);
 }
 
 void childprocess(int consd,int id)
@@ -144,12 +110,12 @@ void childprocess(int consd,int id)
 		{
 			if(request_type==0)
 			{
-				index=check_code(item_code);
+				index=findUPC(item_code);
 				if(index>=0)
 				{
-					total=total+(datap[index].price * quantity);
+					total=total+(data[index].price * quantity);
 
-					sprintf(msg,"Price = %f\tItem name: %s\n",datap[index].price,datap[index].item_name);
+					sprintf(msg,"Price = %f\tItem name: %s\n",data[index].price,data[index].item_name);
 					send(consd,msg,MAXLINE,0);
 				}
 				else
@@ -175,54 +141,57 @@ void childprocess(int consd,int id)
 	}
 }
 
-void create_database(char *file_name)
+int main(int argc, char *argv[])
 {
-	FILE *fp;
-	char line_buff[MAXLINE];
-	int ctr=0;
-	fp=fopen(file_name,"r");
-	if(fp==NULL)
+	if(argc<2)
 	{
-		printf("\nDatabase Configuration Error.. Terminating Server.%s",file_name);
-		signal_handler(0);
+		printf("\nToo few arguments to server!..exiting");
 		exit(0);
 	}
-	fgets(line_buff,MAXLINE,fp); //reads the first line that has the number of entries in the text file
-	records=atoi(line_buff); //gets number of records
-	datap=(database *)malloc(records*sizeof(database)); //allocates memory for database
-	for(ctr=0;ctr<records;ctr++)
+	int clilen; //clilen is the length of the client socket, used as a value-result argument
+	struct sockaddr_in ServAddr, CliAddr; //sockaddr structure for sockets; one for server and the other for client
+	listensd=socket(AF_INET,SOCK_STREAM,0); //Creating a TCP Socket
+	if(listensd<0)
 	{
-		fscanf(fp,"%d",&datap[ctr].item_code);
-		fscanf(fp,"%s",datap[ctr].item_name);
-		fscanf(fp,"%lf",&datap[ctr].price);
+		perror("Cannot create socket!");
+		return 0;
 	}
-	printf("Database Configuration..... Complete\n" );
-	return ;
-}
-
-int check_code(int item_code)
-{
-	int ctr;
-
-	for(ctr=0;ctr<records;ctr++)
+	signal(SIGINT,signalHandler);
+	//Setting up the Server socket
+	ServAddr.sin_family=AF_INET;
+	ServAddr.sin_addr.s_addr = INADDR_ANY; //Connection from any IP.
+	ServAddr.sin_port = htons(atoi(argv[1])); //self defined server port
+	//Binding socket
+	if(bind(listensd,(struct sockaddr *) &ServAddr, sizeof(ServAddr))<0)
 	{
-		if(item_code==datap[ctr].item_code)
+		perror("Cannot bind port!");
+		return 0;
+	}
+
+	if (listen(listensd,SOMAXCONN) <0 )
+	{
+		perror("Unable to set the socket to listen");
+		return 0;
+	}
+	//Initializing Database
+	databaseInit("database.txt");
+	while(1!=0)
+	{
+		clilen=sizeof(CliAddr);
+		if((consd=accept(listensd,(struct sockaddr *)&CliAddr,&clilen))<0)
 		{
-			return(ctr);
+			perror("Cannot establish connection!");
+			return 0;
 		}
+
+		if((fork())==0)
+		{
+			close(listensd); //Allowing only one socket to listen by closing child process' listensd.
+			printf("\nRequest from %s servcied with child process %d\n",inet_ntoa(CliAddr.sin_addr) ,getpid());
+			childprocess(consd,getpid()); //A Child Process for a connection.
+			close(consd); //Child closes its version of consd after transaction is completed.
+			exit(0); //Child terminates.
+		}
+		close(consd); //Parent looks for more connections by closing the consd.
 	}
-	return(-1);
-}
-
-void signal_handler(int sig)
-{
-	char msg[MAXLINE];
-
-	close(listensd);
-	fputs("\nServer terminating!..",stdout);
-
-	sprintf(msg,"Server terminated!\n");
-	send(consd,msg,MAXLINE,0);
-
-	exit(0);
 }
