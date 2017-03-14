@@ -1,1 +1,1 @@
-# Point-of-Sale-Terminal-using-socket-programming
+# Point-of-Sale-Terminal-using-socket-programming.
