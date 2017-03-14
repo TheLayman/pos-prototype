@@ -163,7 +163,7 @@ int main(int argc, char *argv[])
 		if((fork())==0)
 		{
 			close(listensd); //Allowing only one socket to listen by closing child process' listensd.
-			printf("\nRequest from %s servcied with child process %d\n",inet_ntoa(CliAddr.sin_addr) ,getpid());
+			// printf("\nRequest from %s servcied with child process %d\n",inet_ntoa(CliAddr.sin_addr) ,getpid());
 			childprocess(connSD,getpid()); //A Child Process for a connection.
 			close(connSD); //Child closes its version of connSD after transaction is completed.
 			exit(0); //Child terminates.

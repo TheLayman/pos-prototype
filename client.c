@@ -19,18 +19,49 @@ void inputFormat(void)
 
 int commandHandler(int sockfd)
 {
-	char sendBuffer[MAXLINE],recvBuffer[MAXLINE];
+	int tokenCount=0;
+	const char delim[2]="$";
+	char sendBuffer[MAXLINE],recvBuffer[MAXLINE], *token;
 	inputFormat();
 
 	while(1)
 	{
+		int tokenCount=0;
+		float temp;
+		char* lol;
 		memset(sendBuffer,0,MAXLINE);
 		memset(recvBuffer,0,MAXLINE);
 		gets(sendBuffer);
 		send(sockfd,sendBuffer,MAXLINE,0);
 		recv(sockfd,recvBuffer,MAXLINE,0);
-		puts(recvBuffer);
-
+		if(recvBuffer[0]-'0'==0)
+		{
+			token=strtok(recvBuffer,delim);
+			tokenCount=0;
+			while(token!=NULL)
+			{
+				tokenCount++;
+				token=strtok(NULL,delim);
+				if(tokenCount==1) temp=atof(token);
+				if(tokenCount==2) lol=token;
+			}
+			if(tokenCount==2) { printf("Total Amount:%.1f\n",temp ); signalHandler(1);}
+			else if(tokenCount==3)
+			{
+				printf("Price:%.1f ", temp);
+				printf("Name:%s\n", lol);
+			}
+			continue;
+		}
+		if(recvBuffer[0]-'0'==1)
+		{
+			token=strtok(recvBuffer,delim);
+			token=strtok(NULL,delim);
+			printf("%s\n",token);
+			continue;
+		}
+	puts(recvBuffer);
+	signalHandler(1);
 	}
 }
 
