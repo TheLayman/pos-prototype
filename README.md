@@ -15,16 +15,16 @@ Tips to Hack:
   - "defs.h" contains various definitions used in client.c and server.c
 
 # Contributors
-> Pavan Karthik Boddeda
-> Sujay Lakkimsetti
-> George *Veneel* Dogga
+- Pavan Karthik Boddeda
+- Sujay Lakkimsetti
+- George *Veneel* Dogga
 
 ### Contact 
 Facebook: [Sujay Lakkimsetti]
 Email: [Pavan] or [George]
 
-#
-#
+
+
 With Love,
 *TheLaymen*
 
