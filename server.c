@@ -88,7 +88,7 @@ void childprocess(int connSD,int id)
 			index=findUPC(itemUPC);
 			if(index>=0)
 			{
-				total=total+(data[index].price * quantity);
+				total=total+(data[index].price * (float)quantity);
 				sprintf(msg,"0$%.1f$%s\n",data[index].price,data[index].item_name);
 				send(connSD,msg,MAXLINE,0);
 				continue;
