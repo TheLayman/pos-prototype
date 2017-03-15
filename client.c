@@ -1,4 +1,19 @@
-#include "defs.h"
+
+#include<sys/socket.h>
+#include<netinet/in.h>
+#include<arpa/inet.h>
+#include<netdb.h>
+#include<string.h>
+#include<stdio.h>
+#include<signal.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<ctype.h>
+#include <math.h>
+#define MAXLINE 100
+
+int commandHandler(int); //client places request with this command
+void inputFormat(void);
 
 int sockfd; //client socket descriptor
 

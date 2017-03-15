@@ -21,17 +21,17 @@ As the name suggests, this is a prototype of a basic POS terminal aka Point of S
 	```sh
 	./client 127.0.0.1 9999
 	```
-  - Follow the Instruction in the stdout of Client Program to transact. :) 
+  - Follow the Instruction in the stdout of Client Program to transact. :)
 
 Tips to Hack:
 
   - "database.txt" contains the products and their respective prices.
-  - "defs.h" contains various definitions used in client.c and server.c
+  - Follow the Comments and contact us for any doubts or bugs.
 
 # Contributors
-> Pavan Karthik Boddeda
-> Sujay Lakkimsetti
-> George *Veneel* Dogga
+- Pavan Karthik Boddeda
+- Sujay Lakkimsetti
+- George *Veneel* Dogga
 
 
 #
@@ -48,4 +48,3 @@ Facebook: [Sujay Lakkimsetti] *Lead Contributor*
 [Sujay Lakkimsetti]: <https://www.facebook.com/sujay.lakkimsetti>
 [George]: <mailto://georgeveneeldogga@gmail.com>
 [Pavan]: <mailto://pavankarthikboddeda@gmail.com>
-
