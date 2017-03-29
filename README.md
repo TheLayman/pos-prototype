@@ -43,11 +43,8 @@ Tips to Hack:
 # *TheLaymen*
 
 ### Contact US
-Facebook: [Sujay Lakkimsetti] *Lead Contributor*
 
-[![N|Solid](https://scontent.fdel1-1.fna.fbcdn.net/v/t1.0-9/15241999_1177779025641177_7351531658948306661_n.jpg?oh=53f82265f02286b270a4aaee40c7f51e&oe=59253118)](https://www.facebook.com/sujay.lakkimsetti)
 ### Email: [Pavan] or [George]
-[Sujay Lakkimsetti]: <https://www.facebook.com/sujay.lakkimsetti>
 [George]: <mailto:georgeveneeldogga@gmail.com>
 [Pavan]: <mailto:pavankarthikboddeda@gmail.com>
 [GitHub]: https://github.com/TheLayman/pos-prototype
